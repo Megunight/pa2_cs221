@@ -50,4 +50,21 @@ TEST_CASE("Queue::basic functions", "[weight=1][part=queue]") {
     }
     REQUIRE(result == expected);
 }
-
+TEST_CASE("Queue::misc push pop", "[weight=1][part=queue]") {
+    //cout << "Testing Queue..." << endl;
+    Queue<int> intQueue;
+    vector<int> result;
+    vector<int> expected;
+    intQueue.Enqueue(5);
+    intQueue.Enqueue(10);
+    intQueue.Dequeue();
+    intQueue.Enqueue(15);
+    expected.push_back(10);
+    expected.push_back(15);
+    //cout << intStack.peek() << endl;
+    while (!intQueue.IsEmpty()) {
+        result.push_back(intQueue.Dequeue());
+        //cout << intStack.pop() << " ";
+    }
+    REQUIRE(result == expected);
+}
