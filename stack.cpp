@@ -67,8 +67,9 @@ T Stack<T>::Pop() {
 	size_t currentSize = num_items + 1;
 	if (currentSize < (double)(max_items / SHRINKRATE) && max_items > DEFAULTCAPACITY) {
 		size_t newCapacity = DEFAULTCAPACITY;
-		if ((max_items / EXPANSIONFACTOR) > DEFAULTCAPACITY)
+		if ((max_items / EXPANSIONFACTOR) > DEFAULTCAPACITY) {
 			newCapacity = max_items / EXPANSIONFACTOR;
+		}
 		Resize(newCapacity);
 	}
 	return item;
@@ -151,7 +152,7 @@ size_t Stack<T>::Capacity() const {
 template <class T>
 size_t Stack<T>::Size() const {
 	// complete your implementation below
-	return num_items;
+	return num_items + 1;
 }
 
 /**
@@ -170,5 +171,5 @@ void Stack<T>::Resize(size_t n) {
 	}
 	delete[] items;
 	items = newItems;
-	max_items = 0;
+	max_items = n;
 }

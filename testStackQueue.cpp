@@ -68,3 +68,52 @@ TEST_CASE("Queue::misc push pop", "[weight=1][part=queue]") {
     }
     REQUIRE(result == expected);
 }
+TEST_CASE("Stack::test resize up", "[weight=1][part=stack]") {
+    //cout << "Testing Stack..." << endl;
+    Stack<int> intStack;
+
+    for (int i = 1; i <= 10; i++) {
+        intStack.Push(i);
+    }
+
+    int cap = intStack.Capacity();
+    int num_items = intStack.Size();
+    REQUIRE(num_items == 10);
+    REQUIRE(cap == 16);
+}
+TEST_CASE("Stack::test resize down", "[weight=1][part=stack]") {
+    //cout << "Testing Stack..." << endl;
+    Stack<int> intStack;
+
+    // Add 10 items to stack
+    for (int i = 1; i <= 10; i++) {
+        intStack.Push(i);
+        REQUIRE(intStack.Size() == i);
+    }
+
+    // Checking initial number of item and capacity
+    int cap = intStack.Capacity();
+    int num_items = intStack.Size();
+    REQUIRE(num_items == 10);
+    REQUIRE(cap == 16);
+
+    // remove 7 items from stack
+    for (int i = 0; i < 7; i++) {
+        intStack.Pop();
+    }
+
+    //
+    cap = intStack.Capacity();
+    num_items = intStack.Size();
+    REQUIRE(num_items == 3);
+    REQUIRE(cap == 8);
+
+    for (int i = 0; i < 3; i++) {
+        intStack.Pop();
+    }
+
+    cap = intStack.Capacity();
+    num_items = intStack.Size();
+    REQUIRE(num_items == 0);
+    REQUIRE(cap == 4);
+}
