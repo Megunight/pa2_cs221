@@ -45,25 +45,23 @@
         unsigned int height = img.height();
         
         //Check the border of the image
-        if (x < borderwidth || y < borderwidth || x >= width - borderwidth || y >= height - borderwidth) {
-            return bordercolor;
+        if (seedcolor.distanceTo(*img.getPixel(x, y)) > tolerance) {
+            return *img.getPixel(x, y);
         }
         
-        for (int i = x - borderwidth; i <= x + borderwidth; i++) {
-            for (int j = y - borderwidth; j <= y + borderwidth; j++) {
+        for (unsigned int i = x - borderwidth; i <= x + borderwidth; i++) {
+            for (unsigned int j = y - borderwidth; j <= y + borderwidth; j++) {
                 if (i >= 0 && i < width && j >= 0 && j < height) {
-                    RGBAPixel* pixel = img.getPixel(i, j);
-                    double distance = sqrt(pow(pixel->r - seedcolor.r, 2) +
-                                        pow(pixel->g - seedcolor.g, 2) +
-                                        pow(pixel->b - seedcolor.b, 2));
-                    if (distance <= tolerance) {
+                    RGBAPixel pixel = *img.getPixel(i, j);
+                    double distance = seedcolor.distanceTo(*img.getPixel(i, j));
+                    if (distance <= tolerance * tolerance) {
                         return bordercolor;
                     }
                 }
             }
         }
     
-        return seedcolor;
+        return *img.getPixel(x, y);
     }
 
     /**
