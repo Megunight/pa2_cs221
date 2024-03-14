@@ -10,6 +10,7 @@
 
 QuarterColorPicker::QuarterColorPicker(PNG& inputimg, unsigned char b_amount)
 {
+    ogImage = inputimg;
     referenceimg = inputimg;
     brightamount = b_amount;
     referenceimg.resize(referenceimg.width() / 2, referenceimg.height() / 2);
@@ -33,19 +34,56 @@ QuarterColorPicker::QuarterColorPicker(PNG& inputimg, unsigned char b_amount)
  */
 RGBAPixel QuarterColorPicker::operator()(PixelPoint p)
 {
+    
     unsigned int x = p.x;
     unsigned int y = p.y;
     // ensures that x and y are within bounds and matches the reduced dimensions of reference img
     if (x >= referenceimg.width())
-        x = x / 2;
+        x = x - ogImage.width() / 2;
     if (y >= referenceimg.height())
-        y = y / 2;
-    
-    RGBAPixel* rPixel = referenceimg.getPixel(x, y);
-    
+        y = y - ogImage.height() / 2;
+    RGBAPixel color = bilinearBrightness(x, y);
+    return color;
 }
 
 /**
  * Add your private QuarterColorPicker function implementations below
  */
  
+/**
+ * @param x is the x-coord of the scaled referenceimg
+ * @param y is the y-coord of the scaled referenceimg
+ */
+RGBAPixel QuarterColorPicker::bilinearBrightness(unsigned int x, unsigned int y) {
+    unsigned int ogX = 2 * x;
+    unsigned int ogY = 2 * y;
+
+    RGBAPixel* p1 = ogImage.getPixel(ogX, ogY);
+    RGBAPixel* p2 = ogImage.getPixel(ogX + 1, ogY);
+    RGBAPixel* p3 = ogImage.getPixel(ogX, ogY + 1);
+    RGBAPixel* p4 = ogImage.getPixel(ogX + 1, ogY + 1);
+
+    RGBAPixel p;
+
+    unsigned int red = ((p1->r + p2->r) / 2 + (p3->r + p4->r) / 2) / 2 + brightamount;
+    unsigned int green = ((p1->g + p2->g) / 2 + (p3->g + p4->g) / 2) / 2 + brightamount;
+    unsigned int blue = ((p1->b + p2->b) / 2 + (p3->b + p4->b) / 2) / 2 + brightamount;
+    double alpha = ((p1->a + p2->a) / 2 + (p3->a + p4->a) / 2) / 2;
+    
+    if (red > 255)
+        p.r = 255;
+    else
+        p.r = red;
+    if (green > 255)
+        p.g = 255;
+    else
+        p.g = green;
+    if (blue > 255)
+        p.b = 255;
+    else
+        p.b = blue;
+    
+    p.a = alpha;
+    
+    return p;
+}

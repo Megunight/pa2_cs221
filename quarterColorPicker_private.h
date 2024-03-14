@@ -10,3 +10,6 @@
  */
 
  // begin your declarations below
+
+RGBAPixel bilinearBrightness(unsigned int x, unsigned int y);
+PNG ogImage;
