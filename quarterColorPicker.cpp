@@ -10,8 +10,9 @@
 
 QuarterColorPicker::QuarterColorPicker(PNG& inputimg, unsigned char b_amount)
 {
-    // Complete your implementation below
-	
+    referenceimg = inputimg;
+    brightamount = b_amount;
+    referenceimg.resize(referenceimg.width() / 2, referenceimg.height() / 2);
 }
 
 /**
@@ -32,10 +33,19 @@ QuarterColorPicker::QuarterColorPicker(PNG& inputimg, unsigned char b_amount)
  */
 RGBAPixel QuarterColorPicker::operator()(PixelPoint p)
 {
-    // Replace the line below with your implementation
-    return RGBAPixel();
+    unsigned int x = p.x;
+    unsigned int y = p.y;
+    // ensures that x and y are within bounds and matches the reduced dimensions of reference img
+    if (x >= referenceimg.width())
+        x = x / 2;
+    if (y >= referenceimg.height())
+        y = y / 2;
+    
+    RGBAPixel* rPixel = referenceimg.getPixel(x, y);
+    
 }
 
 /**
  * Add your private QuarterColorPicker function implementations below
  */
+ 
