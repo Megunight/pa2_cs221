@@ -105,6 +105,8 @@ template <template <class T> class OrderingStructure> animation filler::Fill(Fil
 	// HINT: you will likely want to declare some kind of structure to track
 	//       which pixels have already been visited
 	
+	PNG image = config.img;	// just so I can pass it into helper
+
 	int counter = 0; // for counting to increment frames
 	std::vector<PixelPoint> visited;
 	os.Add(config.seedpoint);
@@ -112,7 +114,9 @@ template <template <class T> class OrderingStructure> animation filler::Fill(Fil
 	while (!os.IsEmpty()) {
 		// remove and operate
 		PixelPoint p = os.Remove();
-		p.color = config.picker(p);
+		unsigned int x = p.x;
+		unsigned int y = p.y;
+		p.color = (*(config.picker))(p);
 		visited.push_back(p);
 		
 		//check to increment framecount
@@ -122,32 +126,31 @@ template <template <class T> class OrderingStructure> animation filler::Fill(Fil
 			framecount++;
 		}
 
-		unsigned int x = p.x;
-		unsigned int y = p.y;
+
 		// north
 		if ((y + 1) < config.img.height()) {
-			PixelPoint north = getPixelPoint(x, y + 1);
+			PixelPoint north = getPixelPoint(x, y + 1, image);
 			if (!(find(visited, north))
 				&& (config.seedpoint.color.distanceTo(north.color) <= config.tolerance))
 				os.Add(north);
 		}
 		// east
 		if ((x + 1) < config.img.width()) {
-			PixelPoint east = getPixelPoint(x + 1, y);
+			PixelPoint east = getPixelPoint(x + 1, y, image);
 			if (!(find(visited, east))
 				&& (config.seedpoint.color.distanceTo(east.color) <= config.tolerance))
 				os.Add(east);
 		}
 		// south
 		if ((y - 1) >= 0) {
-			PixelPoint south = getPixelPoint(x, y - 1);
+			PixelPoint south = getPixelPoint(x, y - 1, image);
 			if (!(find(visited, south))
 				&& (config.seedpoint.color.distanceTo(south.color) <= config.tolerance))
 				os.Add(south);
 		}
 		// west
 		if ((x - 1) >= 0) {
-			PixelPoint west = getPixelPoint(x - 1, y);
+			PixelPoint west = getPixelPoint(x - 1, y, image);
 			if (!(find(visited, west))
 				&& (config.seedpoint.color.distanceTo(west.color) <= config.tolerance))
 				os.Add(west);
@@ -157,11 +160,11 @@ template <template <class T> class OrderingStructure> animation filler::Fill(Fil
 	return anim;
 }
 
-PixelPoint filler::getPixelPoint(unsigned int x, unsigned int y) {
+PixelPoint filler::getPixelPoint(unsigned int x, unsigned int y, PNG image) {
 	PixelPoint p;
 	p.x = x;
 	p.y = y;
-	p.color = *config.img.getPixel(x, y);
+	p.color = (*(image.getPixel(x, y)));
 	return p;
 }
 
