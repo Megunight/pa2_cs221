@@ -38,7 +38,6 @@
      */
     RGBAPixel BorderColorPicker::operator()(PixelPoint p)
     {
-        // Replace the line below with your implementation
         unsigned int x = p.x;
         unsigned int y = p.y;
         unsigned int width = img.width();
@@ -49,13 +48,17 @@
             return *img.getPixel(x, y);
         }
         
-        for (unsigned int i = x - borderwidth; i <= x + borderwidth; i++) {
-            for (unsigned int j = y - borderwidth; j <= y + borderwidth; j++) {
-                if (i >= 0 && i < width && j >= 0 && j < height) {
-                    RGBAPixel pixel = *img.getPixel(i, j);
-                    double distance = seedcolor.distanceTo(*img.getPixel(i, j));
-                    if (distance <= tolerance * tolerance) {
-                        return bordercolor;
+        for (unsigned int i = x - borderwidth; i <= x + borderwidth; ++i) {
+            for (unsigned int j = y - borderwidth; j <= y + borderwidth; ++j) {
+                int distance = (i - x) * (i - x) + (j - y) * (j - y);
+                if (distance <= static_cast<int>(borderwidth * borderwidth)) {
+                    if (static_cast<int>(i) >= 0 && i < (width) && static_cast<int>(j) >= 0 && j < (height)) {
+                        // Check if the neighboring pixel color is different from the seed color
+                        if (seedcolor.distanceTo(*img.getPixel(i, j)) > tolerance) {
+                            return bordercolor; // Pixel is part of the border
+                        }
+                    } else {
+                        return bordercolor; // Pixel is part of the border (outside image boundaries)
                     }
                 }
             }

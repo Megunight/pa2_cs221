@@ -96,82 +96,89 @@ template <template <class T> class OrderingStructure> animation filler::Fill(Fil
 	 *        it will be the one we test against.
 	 *
 	 */
-
-	int framecount = 0; // increment after processing one pixel; used for producing animation frames (step 3 above)
+	int framecount = 0;
 	animation anim;
 	OrderingStructure<PixelPoint> os;
+	PNG img = config.img;
 
-	// complete your implementation below
-	// HINT: you will likely want to declare some kind of structure to track
-	//       which pixels have already been visited
-	
-	PNG image = config.img;	// just so I can pass it into helper
+	PixelPoint seedpoint = config.seedpoint;
+	ColorPicker *colorPicker = config.picker;
+	double tolerance = config.tolerance;
+	int frameFq = config.frameFreq;
+	int width = img.width();
+	int height = img.height();
+	RGBAPixel seedColor = *img.getPixel(seedpoint.x, seedpoint.y);
+	RGBAPixel currColor;
 
-	int counter = 0; // for counting to increment frames
-	std::vector<PixelPoint> visited;
-	os.Add(config.seedpoint);
+	// Create a 2D array to track visited pixels
+	bool **visited = new bool *[width];
+	for (int i = 0; i < width; i++) {
+		visited[i] = new bool[height]();
+		for (int j = 0; j < height; j++) {
+            visited[i][j] = false;
+        }
+	}
+
+	// Add seed point to ordering structure and mark it as visited
+	os.Add(seedpoint);
+	visited[seedpoint.x][seedpoint.y] = true;
+
+	/**
+	 * Fill neighboring pixels
+	 * 
+	 * 2.     When implementing your breadth-first-search and
+	 *        depth-first-search fills, you will need to explore neighboring
+	 *        pixels (up/down/left/right) in some order.
+	 *
+	 *        While the order in which you examine neighbors does not matter
+	 *        for a proper fill, you must use the same order as we do for
+	 *        your animations to come out like ours! The order you should put
+	 *        neighboring pixels **ONTO** the queue or stack is as follows:
+	 *        2.1. northern neighbour (up)
+	 *        2.2. eastern neighbour (right)
+	 *        2.3. southern neighbour (down)
+	 *        2.4. western neighbour (left)
+	 * 
+	 *        If you process the neighbours in a different order, your fill may
+	 *        still work correctly, but your animations will be different
+	 *        from the grading scripts!
+	 * 
+	 *  
+	 */
 
 	while (!os.IsEmpty()) {
-		// remove and operate
 		PixelPoint p = os.Remove();
-		unsigned int x = p.x;
-		unsigned int y = p.y;
-		p.color = (*(config.picker))(p);
-		visited.push_back(p);
-		
-		//check to increment framecount
-		counter++;
-		if (counter == config.frameFreq) {
-			counter = 0;
-			framecount++;
+		currColor = *img.getPixel(p.x, p.y);
+		if (framecount % frameFq == 0) {
+			anim.addFrame(img);
 		}
 
+		// Define the order to visit neighboring pixels
+		const std::vector<std::pair<int, int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
-		// north
-		if ((y + 1) < config.img.height()) {
-			PixelPoint north = getPixelPoint(x, y + 1, image);
-			if (!(find(visited, north))
-				&& (config.seedpoint.color.distanceTo(north.color) <= config.tolerance))
-				os.Add(north);
+		for (const auto &dir : directions) {
+			int nx = p.x + dir.first;
+			int ny = p.y + dir.second;
+
+			// Check if the neighboring pixel is within bounds and unvisited
+			if (nx >= 0 && nx < width && ny >= 0 && ny < height && !visited[nx][ny] &&
+				seedColor.distanceTo(*img.getPixel(nx, ny)) <= tolerance) {
+				os.Add(PixelPoint(nx, ny));
+				visited[nx][ny] = true;
+			}
 		}
-		// east
-		if ((x + 1) < config.img.width()) {
-			PixelPoint east = getPixelPoint(x + 1, y, image);
-			if (!(find(visited, east))
-				&& (config.seedpoint.color.distanceTo(east.color) <= config.tolerance))
-				os.Add(east);
-		}
-		// south
-		if ((y - 1) >= 0) {
-			PixelPoint south = getPixelPoint(x, y - 1, image);
-			if (!(find(visited, south))
-				&& (config.seedpoint.color.distanceTo(south.color) <= config.tolerance))
-				os.Add(south);
-		}
-		// west
-		if ((x - 1) >= 0) {
-			PixelPoint west = getPixelPoint(x - 1, y, image);
-			if (!(find(visited, west))
-				&& (config.seedpoint.color.distanceTo(west.color) <= config.tolerance))
-				os.Add(west);
-		}
+
+		// Fill the current pixel and increment frame count
+		*img.getPixel(p.x, p.y) = (*colorPicker)(p);
+		framecount++;
 	}
+
+	// Add final frame and clean up memory
+	anim.addFrame(img);
+	for (int i = 0; i < width; i++) {
+		delete[] visited[i];
+	}
+	delete[] visited;
 
 	return anim;
-}
-
-PixelPoint filler::getPixelPoint(unsigned int x, unsigned int y, PNG image) {
-	PixelPoint p;
-	p.x = x;
-	p.y = y;
-	p.color = (*(image.getPixel(x, y)));
-	return p;
-}
-
-bool filler::find(const std::vector<PixelPoint> v, PixelPoint p) {
-	for (PixelPoint curr : v) {
-		if (curr == p)
-			return true;
-	}
-	return false;
 }
